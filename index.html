@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="dist/js/tabulator.min.js"></script>
+    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+    <link href="/dist/css/tabulator_semanticui.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+</head>
+<body>
+    <div id="example-table"></div>
+    <script>
+        //Create Date Editor
+var dateEditor = function(cell, onRendered, success, cancel){
+    //cell - the cell component for the editable cell
+    //onRendered - function to call when the editor has been rendered
+    //success - function to call to pass thesuccessfully updated value to Tabulator
+    //cancel - function to call to abort the edit and return to a normal cell
+
+    //create and style input
+    var cellValue = luxon.DateTime.fromFormat(cell.getValue(), "dd/MM/yyyy").toFormat("yyyy-MM-dd"),
+    input = document.createElement("input");
+
+    input.setAttribute("type", "date");
+
+    input.style.padding = "4px";
+    input.style.width = "100%";
+    input.style.boxSizing = "border-box";
+
+    input.value = cellValue;
+
+    onRendered(function(){
+        input.focus();
+        input.style.height = "100%";
+    });
+
+    function onChange(){
+        if(input.value != cellValue){
+            success(luxon.DateTime.fromFormat(input.value, "yyyy-MM-dd").toFormat("dd/MM/yyyy"));
+        }else{
+            cancel();
+        }
+    }
+
+    //submit new value on blur or change
+    input.addEventListener("blur", onChange);
+
+    //submit new value on enter
+    input.addEventListener("keydown", function(e){
+        if(e.keyCode == 13){
+            onChange();
+        }
+
+        if(e.keyCode == 27){
+            cancel();
+        }
+    });
+
+    return input;
+};
+
+
+
+
+        var datas = [];
+
+        fetch('http://localhost:8888/ynfinal/comp')
+            .then(res => res.json())
+            .then(result => {
+                renderCampList(result);
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            });
+
+        function renderCampList(list) {
+            if (list === null || list.length === 0) {
+                console.log('캠핑이 아직 없습니다! ㅠㅠ');
+            } else {
+                for (let camp of list) {
+                    const {compCode, compRegNo, compName, compCeo, compPhone} = camp;
+                    datas.push({
+                        compCode,
+                        compRegNo,
+                        compName,
+                        compCeo,
+                        compPhone
+                    });
+                }
+                initializeTable();
+            }
+        }
+
+
+        
+
+        function initializeTable() {
+            var table = new Tabulator("#example-table", 
+            {
+                rowFormatter:function(row){
+        if(row.getData().compCode){
+            row.getElement().classList.add("green"); //mark rows with age less than 18 with a warning state;
+        }
+    },
+     height:"311px",
+     data:datas,
+     clipboard:false,
+     clipboardPasteAction:"replace",
+     
+     columns:[
+        
+
+
+         {title:"Name", field:"compCode", width:200, editor:"input"},
+         {title:"Progress", field:"compName", width:100, sorter:"number", editor:"input"},
+         {title:"Gender", field:"gender", editor:"input"},
+         {title:"Rating", field:"compCeo", width:80, editor:"input"},
+         {title:"Favourite Color", field:"col"},
+         {title:"Date Of Birth", field:"dob", hozAlign:"center", sorter:"date"},
+         {title:"Driver", field:"car", hozAlign:"center", formatter:"tickCross"},
+     ],
+ });
+
+
+
+            // var table = new Tabulator("#example-table", {
+            //     data: datas, // assign data to table
+            //     autoColumns: true // create columns from data field names
+            // });
+        }
+    </script>
+</body>
+</html>

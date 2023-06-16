@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="dist/js/tabulator.min.js"></script>
+    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+    <link href="/dist/css/tabulator_semanticui.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+</head>
+<body>
+    <div>
+        <button id="lang-french">French</button>
+        <button id="lang-german">German</button>
+        <button id="lang-default">Default (English)</button>
+    </div>
+    <div id="example-table"></div>
+    <div id="example-table2"></div>
+    <script>
+        
+        
+
+        var dateEditor = function(cell, onRendered, success, cancel){
+    //cell - the cell component for the editable cell
+    //onRendered - function to call when the editor has been rendered
+    //success - function to call to pass thesuccessfully updated value to Tabulator
+    //cancel - function to call to abort the edit and return to a normal cell
+
+    //create and style input
+    var cellValue = luxon.DateTime.fromFormat(cell.getValue(), "dd/MM/yyyy").toFormat("yyyy-MM-dd"),
+    input = document.createElement("input");
+
+    input.setAttribute("type", "date");
+
+    input.style.padding = "4px";
+    input.style.width = "100%";
+    input.style.boxSizing = "border-box";
+
+    input.value = cellValue;
+
+    onRendered(function(){
+        input.focus();
+        input.style.height = "100%";
+    });
+
+    function onChange(){
+        if(input.value != cellValue){
+            success(luxon.DateTime.fromFormat(input.value, "yyyy-MM-dd").toFormat("dd/MM/yyyy"));
+        }else{
+            cancel();
+        }
+    }
+
+    //submit new value on blur or change
+    input.addEventListener("blur", onChange);
+
+    //submit new value on enter
+    input.addEventListener("keydown", function(e){
+        if(e.keyCode == 13){
+            onChange();
+        }
+
+        if(e.keyCode == 27){
+            cancel();
+        }
+    });
+
+    return input;
+};
+
+
+
+
+        var datas = [];
+
+        fetch('http://localhost:8888/ynfinal/comp')
+            .then(res => res.json())
+            .then(result => {
+                renderCampList(result);
+            })
+            .catch(error => {
+                console.log('Error:', error);
+            });
+
+        function renderCampList(list) {
+            if (list === null || list.length === 0) {
+                console.log('캠핑이 아직 없습니다! ㅠㅠ');
+            } else {
+                for (let camp of list) {
+                    const {compCode, compRegNo, compName, compCeo, compPhone} = camp;
+                    datas.push({
+                        compCode,
+                        compRegNo,
+                        compName,
+                        compCeo,
+                        compPhone
+                    });
+                }
+                initializeTable();
+            }
+        }
+        function initializeTable() {
+        var table = new Tabulator("#example-table", {
+            data:datas,
+            autoColumns:true,
+        });
+
+
+
+        var table = new Tabulator("#example-table2", {
+            height:"311px",
+            layout:"fitColumns",
+            pagination:"local",
+            paginationSize:6,
+            paginationSizeSelector:[3, 6, 8, 10],
+            movableColumns:true,
+            paginationCounter:"rows",
+            reactiveData:true, //turn on data reactivity
+            data:datas,
+            autoColumns:true,
+            columns:[     
+        {title:"Name", field:"compCode", width:150, editor:"input"},
+        {title:"Location", field:"compRegNo", width:130, editor:"list", editorParams:{autocomplete:"true", allowEmpty:true,listOnEmpty:true, valuesLookup:true}},
+        {title:"Progress", field:"compName", sorter:"number", hozAlign:"left", formatter:"progress", width:140, editor:true},
+        {title:"Gender", field:"compCeo", editor:"list", editorParams:{values:{"male":"Male", "female":"Female", "unknown":"Unknown"}}},
+        {title:"Rating", field:"compPhone",  formatter:"star", hozAlign:"center", width:100, editor:true}
+    ],
+        });
+    }
+
+    </script>
+</body>
+</html>
