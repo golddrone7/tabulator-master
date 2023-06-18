@@ -12,7 +12,7 @@
 </head>
 <body>
     <div>
-        <button id="lang-french">French</button>
+        <button id="lang-french">저장</button>
         <button id="lang-german">German</button>
         <button id="lang-default">Default (English)</button>
     </div>
@@ -20,6 +20,31 @@
     <div id="example-table2"></div>
     <script>
         
+        var table1;
+        var table2;
+
+        document.getElementById('lang-french').addEventListener('click', function() {
+            var rowData = table1.getData();
+            var jsonData = JSON.stringify(rowData);
+            console.log(jsonData);
+
+            fetch('http://localhost:8888/ynfinal/comp',
+                {
+                    method: 'PATCH',
+                    body: jsonData,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                    
+                })
+
+        })
+        
+
+
+
+
+
         
 
         var dateEditor = function(cell, onRendered, success, cancel){
@@ -86,7 +111,7 @@
 
         function renderCampList(list) {
             if (list === null || list.length === 0) {
-                console.log('캠핑이 아직 없습니다! ㅠㅠ');
+                console.log('데이터 없음');
             } else {
                 for (let camp of list) {
                     const {compCode, compRegNo, compName, compCeo, compPhone} = camp;
@@ -101,15 +126,64 @@
                 initializeTable();
             }
         }
+
+
+
+        // 라디오버튼 생성하기
+        table.addListener("rowSelectionChanged", function (data) {
+            const selectedRow = data.getSelectedRows()[0]; // 선택된 행 가져오기
+            const radioContainer = document.getElementById("radio-container");
+
+            // 기존 라디오 버튼 삭제
+            while (radioContainer.firstChild) {
+                radioContainer.firstChild.remove();
+            }
+
+            // 선택된 행에 대한 상세 정보 표시
+            if (selectedRow) {
+                const rowData = selectedRow.getData();
+                for (const key in rowData) {
+                const radio = document.createElement("input");
+                radio.type = "radio";
+                radio.name = "detail-radio";
+                radio.value = rowData[key];
+                radioContainer.appendChild(radio);
+
+                const label = document.createElement("label");
+                label.textContent = `${key}: ${rowData[key]}`;
+                radioContainer.appendChild(label);
+                }
+            }
+            });
+
+
+
+
+
+
+
+
+
+
+
         function initializeTable() {
-        var table = new Tabulator("#example-table", {
+        table1 = new Tabulator("#example-table", {
             data:datas,
-            autoColumns:true,
+            selectable: false,
+            columns:[     
+                {title:"Name", field:"compCode", width:150, editor:"input"},
+                {title:"Location", field:"compRegNo", width:130, editor:"input"},
+                {title:"Progress", field:"compName",  editor:"input"},
+                {title:"Gender", field:"compCeo",  editor:"input"},
+                {title:"Rating", field:"compPhone",   editor:"input"}
+            ]
+            // autoColumns:true,
+            
         });
 
 
 
-        var table = new Tabulator("#example-table2", {
+        table2 = new Tabulator("#example-table2", {
             height:"311px",
             layout:"fitColumns",
             pagination:"local",
@@ -119,7 +193,7 @@
             paginationCounter:"rows",
             reactiveData:true, //turn on data reactivity
             data:datas,
-            autoColumns:true,
+            autoColumns:false,
             columns:[     
         {title:"Name", field:"compCode", width:150, editor:"input"},
         {title:"Location", field:"compRegNo", width:130, editor:"list", editorParams:{autocomplete:"true", allowEmpty:true,listOnEmpty:true, valuesLookup:true}},
@@ -129,6 +203,12 @@
     ],
         });
     }
+
+
+
+
+
+
 
     </script>
 </body>
