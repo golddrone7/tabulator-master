@@ -104,8 +104,17 @@
         function initializeTable() {
         var table = new Tabulator("#example-table", {
             data:datas,
-            autoColumns:true,
+            // autoColumns:true,
+
+            columns:[     
+        {title:"Name", field:"compCode", width:150, editor:"input"},
+        {title:"Location", field:"compRegNo", width:130, editor:"list", editorParams:{autocomplete:"true", allowEmpty:true,listOnEmpty:true, valuesLookup:true}},
+        {title:"Progress", field:"compName", sorter:"number", hozAlign:"left", formatter:"progress", width:140, editor:true},
+        {title:"Gender", field:"compCeo", editor:"list", editorParams:{values:{"male":"Male", "female":"Female", "unknown":"Unknown"}}},
+        {title:"Rating", field:"compPhone",  formatter:"star", hozAlign:"center", width:100, editor:true}
+    ],
         });
+        
 
 
 
@@ -119,14 +128,8 @@
             paginationCounter:"rows",
             reactiveData:true, //turn on data reactivity
             data:datas,
-            autoColumns:true,
-            columns:[     
-        {title:"Name", field:"compCode", width:150, editor:"input"},
-        {title:"Location", field:"compRegNo", width:130, editor:"list", editorParams:{autocomplete:"true", allowEmpty:true,listOnEmpty:true, valuesLookup:true}},
-        {title:"Progress", field:"compName", sorter:"number", hozAlign:"left", formatter:"progress", width:140, editor:true},
-        {title:"Gender", field:"compCeo", editor:"list", editorParams:{values:{"male":"Male", "female":"Female", "unknown":"Unknown"}}},
-        {title:"Rating", field:"compPhone",  formatter:"star", hozAlign:"center", width:100, editor:true}
-    ],
+            autoColumns:true
+            
         });
     }
 
