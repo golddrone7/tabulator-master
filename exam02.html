@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabulator Example</title>
+    <link href="https://cdn.jsdelivr.net/npm/tabulator-tables@4.9.3/dist/css/tabulator.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tabulator-tables@4.9.3/dist/js/tabulator.min.js"></script>
+</head>
+<style>
+   .tabulator {
+  box-shadow: none;
+  border: none;
+}
+</style>
+<body>
+    <div style="z-index: 10000; background-color: blue; width: 500px; height: 500px;">하위</div>
+    <!-- 테이블을 표시할 요소 -->
+
+    <button id="save">저장하기</button>
+    <div class="container" style="width: 500px; background-color: aquamarine;">
+        <div id="example-table"></div>
+        <div id="example-detail-table"></div>
+    </div>
+    <script>
+        // 서버에서 데이터를 가져와서 테이블에 표시하는 함수
+        function loadTableData() {
+            fetch('http://localhost:8888/ynfinal/comp', {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }) // 데이터를 가져올 URL을 설정해야 합니다.
+                .then(response => response.json())
+                .then(data11 => {
+                    // 데이터를 받아와서 테이블 생성
+                    var table = new Tabulator("#example-table", {
+                        width: '500px',
+                        layout: 'fitDataFill',
+                        data: data11, // 받아온 데이터를 테이블에 설정
+                        columns: [ // 열 정의
+                            { title: "ID", field: "compCode"},
+                            { title: "Name", field: "compName", editor: "input"  }
+                        ],
+                        rowClick: function(e, row) {
+                            var rowData = row.getData();
+                        
+                            console.log("Clicked Row Data:", rowData);
+                            detail(rowData.compCode); // 클릭한 행의 compCode를 인자로 detail 함수 호출
+                        }    
+                    });
+                    
+
+                    function detail(compCode){
+                        fetch(`http://localhost:8888/ynfinal/comp/${compCode}`) // 상세 데이터를 가져올 URL 설정
+                            .then(response => response.json())
+                            .then(detailData => {
+                                
+                                var emptyData = []; // 빈 데이터 배열 생성
+
+                            // 입력된 데이터가 10개 미만인 경우 빈 데이터로 채워서 10개의 행을 생성
+                            if ([detailData.length] < 10) {
+                                var emptyRowCount = 10 - [detailData].length;
+                                for (var i = 0; i < emptyRowCount; i++) {
+                                emptyData.push({}); // 빈 데이터 객체를 배열에 추가
+                                }
+                            }
+
+
+
+                                var table2 = new Tabulator("#example-detail-table", {
+                                    
+                                    data: [detailData].concat(emptyData), // 받아온 상세 데이터를 테이블에 설정
+                                    height : "300px",
+                                    layout: 'fitDataFill',
+                                    columns: [ // 열 정의
+                                        { title: "Name", field: "compName", editor: "input" },
+                                        { title: "Reg No", field: "compRegNo", editor: "input" },
+                                        { title: "CEO", field: "compCeo", editor: "input" },
+                                        { title: "Phone", field: "compPhone", editor: "input" }
+                                    ],
+                                    rowClick: function(e, row) {
+                                
+                                        var rowData = row.getData();
+                                        
+                                        console.log("Clicked Row Data:", rowData);
+                                    }    
+                                });
+                            })
+                            .catch(error => {
+                                console.log('Error:', error);
+                            });
+                    }
+                })
+                .catch(error => {
+                    console.log('Error:', error);
+                });
+        }
+        // "저장하기" 버튼 요소 선택
+            var saveButton = document.getElementById("save");
+
+            // 클릭 이벤트 핸들러 함수 정의
+            function handleSaveButtonClick() {
+            // 이벤트 발생 시 수행할 작업을 여기에 작성합니다.
+            console.log("Save 버튼이 클릭되었습니다.");
+            // 저장 작업 등을 수행할 코드를 추가합니다.
+            }
+
+            // "저장하기" 버튼에 클릭 이벤트 리스너 등록
+            saveButton.addEventListener("click", handleSaveButtonClick);
+
+
+        // 페이지 로드 시 테이블 데이터를 가져오기 위해 loadTableData 함수 호출
+        loadTableData();
+    </script>
+</body>
+</html>
